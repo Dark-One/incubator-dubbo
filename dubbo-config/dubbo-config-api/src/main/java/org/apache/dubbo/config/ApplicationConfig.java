@@ -38,21 +38,25 @@ public class ApplicationConfig extends AbstractConfig {
 
     /**
      * Application name
+     * 应用名称
      */
     private String name;
 
     /**
      * The application version
+     * 应用版本号
      */
     private String version;
 
     /**
      * Application owner
+     * 应用归属
      */
     private String owner;
 
     /**
      * Application's organization (BU)
+     * 应用机构
      */
     private String organization;
 
@@ -63,6 +67,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     /**
      * Environment, e.g. dev, test or production
+     * 环境值
      */
     private String environment;
 
@@ -73,6 +78,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     /**
      * The type of the log access
+     * 日志级别
      */
     private String logger;
 
@@ -84,6 +90,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     /**
      * Monitor center
+     * 监控中心
      */
     private MonitorConfig monitor;
 
@@ -94,21 +101,25 @@ public class ApplicationConfig extends AbstractConfig {
 
     /**
      * Directory for saving thread dump
+     * ?
      */
     private String dumpDirectory;
 
     /**
      * Whether to enable qos or not
+     * qos监控是否启动
      */
     private Boolean qosEnable;
 
     /**
      * The qos port to listen
+     * qos监听端口
      */
     private Integer qosPort;
 
     /**
      * Should we accept foreign ip or not?
+     * 是否接受外部qos监听
      */
     private Boolean qosAcceptForeignIp;
 

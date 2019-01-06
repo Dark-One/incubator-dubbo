@@ -34,31 +34,37 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     /**
      * The service version
+     * 服务版本号
      */
     protected String version;
 
     /**
      * The service group
+     * 服务分组
      */
     protected String group;
 
     /**
      * whether the service is deprecated
+     * 服务是否过期
      */
     protected Boolean deprecated;
 
     /**
      * The time delay register service (milliseconds)
+     * 延迟发布(毫秒)
      */
     protected Integer delay;
 
     /**
      * Whether to export the service
+     * 是否发布该服务
      */
     protected Boolean export;
 
     /**
      * The service weight
+     * 服务权重?
      */
     protected Integer weight;
 
@@ -86,21 +92,27 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     /**
      * The protocol list the service will export with
+     * 多协议集合
      */
     protected List<ProtocolConfig> protocols;
     protected String protocolIds;
     // provider tag
     protected String tag;
     // max allowed execute times
+    // 允许最大执行时间
     private Integer executes;
 
     /**
      * Whether to register
+     * 是否注册?
      */
     private Boolean register;
 
     /**
      * Warm up period
+     * 预热时间
+     * 在这段预热时间内，每秒分配的许可数会平稳地增长直到预热期结束时达到其最大速率（只要存在足够请求数来使其饱和）。
+     * 同样地，如果在warmupPeriod时间内闲置不用，它将会逐步地返回冷却状态
      */
     private Integer warmup;
 

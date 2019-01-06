@@ -32,11 +32,14 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -112,6 +115,8 @@ public abstract class AbstractConfig implements Serializable {
         legacyProperties.put("dubbo.service.url", "dubbo.service.address");
 
         // this is only for compatibility
+        // 销毁钩子, 当jvm关闭时调用
+        // DubboShutdownHook.run(), 销毁资源与协议
         DubboShutdownHook.getDubboShutdownHook().register();
     }
 
@@ -535,14 +540,22 @@ public abstract class AbstractConfig implements Serializable {
         this.prefix = prefix;
     }
 
+
+
+    private static final Object refreshClazzAccessMonitor = new Object();
+
     /**
      * TODO: Currently, only support overriding of properties explicitly defined in Config class, doesn't support
      * overriding of customized parameters stored in 'parameters'.
+     * 更新当前调用对象, 将当前对象的key-value pair存入新创建的InmemoryConfiguration, 作为复合配置的configList中的AbstractConfig
+     * 再将当前对象的set方法对应的属性, 从复合对象中按顺序找到第一个匹配的, invoke更新当前对象属性值
      */
     public void refresh() {
         try {
+            // 从单例的环境中获取相关的配置属性
             CompositeConfiguration compositeConfiguration = Environment.getInstance().getConfiguration(getPrefix(), getId());
             InmemoryConfiguration config = new InmemoryConfiguration(getPrefix(), getId());
+            // 将当前类,下面的clazz的所有属性存储到config的store中
             config.addProperties(getMetaData());
             if (Environment.getInstance().isConfigCenterFirst()) {
                 // The sequence would be: SystemConfiguration -> ExternalConfiguration -> AppExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
@@ -553,13 +566,35 @@ public abstract class AbstractConfig implements Serializable {
             }
 
             // loop methods, get override value and set the new value back to method
-            Method[] methods = getClass().getMethods();
+            Class clazz = getClass();
+            // logger.info("Current class call refresh is " + clazz.getName());
+
+            Method[] methods = clazz.getMethods();
+            Field[] fields = clazz.getDeclaredFields();
             for (Method method : methods) {
                 if (ClassHelper.isSetter(method)) {
                     try {
-                        String value = compositeConfiguration.getString(extractPropertyName(getClass(), method));
+                        String propertyName = extractPropertyName(getClass(), method);
+                        // 按照compositeConfiguration.configList中的优先级从前往后取, 取到后返回
+                        String value = compositeConfiguration.getString(propertyName);
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.isNotEmpty(value) && ClassHelper.isTypeMatch(method.getParameterTypes()[0], value)) {
+                            // 以下synchronized中不是源码, 为阅读方便私自添加
+                            synchronized (refreshClazzAccessMonitor) {
+                                for (Field field : fields) {
+                                    if(field.getName().equals(propertyName)) {
+                                        Object oldValue;
+                                        if (!field.isAccessible()) {
+                                            field.setAccessible(true);
+                                            oldValue = field.get(this);
+                                            field.setAccessible(false);
+                                        }else {
+                                            oldValue = field.get(this);
+                                        }
+                                        logger.info(String.format("\n#============\nclazz\t[%s] refresh\nfield\t[%s]\nfrom\t[%s]\nto\t\t[%s]\n#============", clazz.getName(), field.getName(), oldValue, value));
+                                    }
+                                }
+                            }
                             method.invoke(this, ClassHelper.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (NoSuchMethodException e) {

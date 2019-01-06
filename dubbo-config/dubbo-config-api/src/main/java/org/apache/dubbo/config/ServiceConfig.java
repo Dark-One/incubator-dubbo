@@ -101,31 +101,37 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * A delayed exposure service timer
+     * 延迟发布定时线程
      */
     private static final ScheduledExecutorService delayExportExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
     /**
      * The urls of the services exported
+     * 服务发布地址
      */
     private final List<URL> urls = new ArrayList<URL>();
 
     /**
      * The exported services
+     * 已发布服务集合
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
     /**
      * The interface name of the exported service
+     * 已发布服务的接口名称
      */
     private String interfaceName;
 
     /**
      * The interface class of the exported service
+     * 已发布服务对应接口
      */
     private Class<?> interfaceClass;
 
     /**
      * The reference of the interface implementation
+     * 对应服务的实现类
      */
     private T ref;
 
@@ -136,6 +142,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * The method configuration
+     * 服务中暴露的方法集合
      */
     private List<MethodConfig> methods;
 
@@ -151,16 +158,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * Whether the provider has been exported
+     * 是否已发布
      */
     private transient volatile boolean exported;
 
     /**
      * The flag whether a service has unexported ,if the method unexported is invoked, the value is true
+     * 是否已取消发布
      */
     private transient volatile boolean unexported;
 
     /**
      * whether it is a GenericService
+     * 是否泛型接口
      */
     private volatile String generic;
 
@@ -261,6 +271,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     public void checkAndUpdateSubConfigs() {
         checkDefault();
         if (provider != null) {
+            // 自身属性为空, 从provider继承application, module, registry,  monitor, protocol
             inheritIfAbsentFromProvider();
         }
         if (module != null) {

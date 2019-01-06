@@ -65,6 +65,7 @@ public class DubboShutdownHook extends Thread {
      */
     public void register() {
         if (!registered.get() && registered.compareAndSet(false, true)) {
+            // 当jvm关闭时由系统进行调用Thread.run()
             Runtime.getRuntime().addShutdownHook(getDubboShutdownHook());
         }
     }

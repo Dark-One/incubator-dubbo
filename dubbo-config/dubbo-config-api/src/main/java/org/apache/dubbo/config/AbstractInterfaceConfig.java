@@ -60,6 +60,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * Local impl class name for the service interface
+     * 对应服务接口的本地实现类名称
      */
     protected String local;
 
@@ -75,6 +76,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
+     * 代理策略
      */
     protected String proxy;
 
@@ -84,7 +86,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String cluster;
 
     /**
-     * The {@link Filter} when the provicer side exposed a service or the customer side references a remote service used,
+     * The {@link Filter} when the provider side exposed a service or the customer side references a remote service used,
      * if there are more than one, you can use commas to separate them
      */
     protected String filter;
@@ -97,6 +99,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * The owner of zhe service providers
+     * 服务归属
      */
     protected String owner;
 
