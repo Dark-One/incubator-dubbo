@@ -158,6 +158,7 @@ public abstract class AbstractConfig implements Serializable {
             return;
         }
         Method[] methods = config.getClass().getMethods();
+        Map<String, String> _recordPair = new HashMap<>();
         for (Method method : methods) {
             try {
                 String name = method.getName();
@@ -192,6 +193,7 @@ public abstract class AbstractConfig implements Serializable {
                             key = prefix + "." + key;
                         }
                         parameters.put(key, str);
+                        _recordPair.put(key, str);
                     } else if (parameter != null && parameter.required()) {
                         throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
                     }
@@ -210,6 +212,18 @@ public abstract class AbstractConfig implements Serializable {
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+        }
+        // add by D
+        if (!_recordPair.isEmpty()) {
+            logger.info(String.format(
+                    "\n#++++++++++++++++++++++++++++++++++++\n" +
+                            "# append parameters \t[%s]\n" +
+                            "# be appended object is [%s]\n" +
+                            "# append object is \t\t[%s]\n" +
+                            "# append property is \t[%s]\n" +
+                            "#++++++++++++++++++++++++++++++++++++",
+                    config.getClass().getName(),
+                    parameters, config, _recordPair));
         }
     }
 
@@ -591,7 +605,17 @@ public abstract class AbstractConfig implements Serializable {
                                         }else {
                                             oldValue = field.get(this);
                                         }
-                                        logger.info(String.format("\n#============\nclazz\t[%s] refresh\nfield\t[%s]\nfrom\t[%s]\nto\t\t[%s]\n#============", clazz.getName(), field.getName(), oldValue, value));
+                                        logger.info(String.format(
+                                                "\n#====================================\n" +
+                                                        "# clazz\t\t\t\t\t[%s] refresh\n" +
+                                                        "# field\t\t\t\t\t[%s]\n" +
+                                                        "# from\t\t\t\t\t[%s]\n" +
+                                                        "# to\t\t\t\t\t[%s]\n" +
+                                                        "#====================================",
+                                                clazz.getName(),
+                                                field.getName(),
+                                                oldValue,
+                                                value));
                                     }
                                 }
                             }

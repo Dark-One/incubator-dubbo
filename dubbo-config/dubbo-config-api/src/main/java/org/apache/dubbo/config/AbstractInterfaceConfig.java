@@ -148,8 +148,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
      */
     protected void checkRegistry() {
+        // 如果没有registries信息, 将会从系统变量->环境变量->dubbo.properties中按优先级获取dubbo.registry.address
         loadRegistriesFromBackwardConfig();
-
+        // 从外部配置和app外部配置中获取dubbo.registries相关子配置, 组装到registries属性中
         convertRegistryIdsToRegistries();
 
         for (RegistryConfig registryConfig : registries) {
@@ -166,7 +167,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         "The registry config is: " + registryConfig);
             }
         }
-
+        // 如果有zk协议的, 创建CuratorFramework的client连接zk
         useRegistryForConfigIfNecessary();
     }
 
@@ -242,11 +243,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      */
     protected List<URL> loadRegistries(boolean provider) {
         // check && override if necessary
+        // 检查dubbo.registry相关配置, 如果不存在则按优先级重新赋值, zk协议的连接会初始化zkClient
         checkRegistry();
         checkRegistryDataConfig();
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
             Map<String, String> registryDataConfigurationMap = new HashMap<>(4);
+            // 将registryDataConfig中的属性以get方法获取到后, 将驼峰属性转换为以.分割的名称存入registryDataConfigurationMap
             appendParameters(registryDataConfigurationMap, registryDataConfig);
             for (RegistryConfig config : registries) {
                 String address = config.getAddress();
@@ -324,7 +327,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     static void appendRuntimeParameters(Map<String, String> map) {
+        // dubbo 版本
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
+        // MANIFEST.MF version
         map.put(Constants.SPECIFICATION_VERSION_KEY, Version.getVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {

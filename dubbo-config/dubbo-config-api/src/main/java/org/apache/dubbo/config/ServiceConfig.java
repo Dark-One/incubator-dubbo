@@ -374,7 +374,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
+        // 将引用对象组装成ProviderModel + MethodModel的形式, 作用一类似缓存, 不重复解析ref类, 作用二让反射结构更清晰
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), ref, interfaceClass);
+        // ApplicationModel中持有的providedServices, 即dubbo的服务容器
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
         doExportUrls();
     }
@@ -426,8 +428,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         Map<String, String> map = new HashMap<String, String>();
+        // 是否是服务端
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
+        // 获取dubbo版本，specVersion(MANIFEST.MF), 时间戳, pid
         appendRuntimeParameters(map);
+        // 反射将以下对象的key,value存入map
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
@@ -644,7 +649,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
+     * 为provider配置绑定ip
      * Register & bind IP address for service provider, can be configured separately.
+     * 配置优先级, 环境变量, 系统变量, 配置文件
      * Configuration priority: environment variables -> java system properties -> host property in config file ->
      * /etc/hosts -> default network address -> first available network address
      *
@@ -656,6 +663,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private String findConfigedHosts(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> map) {
         boolean anyhost = false;
 
+        // 获取系统变量DUBBO_IP_TO_BIND
         String hostToBind = getValueFromConfig(protocolConfig, Constants.DUBBO_IP_TO_BIND);
         if (hostToBind != null && hostToBind.length() > 0 && isInvalidLocalHost(hostToBind)) {
             throw new IllegalArgumentException("Specified invalid bind ip from property:" + Constants.DUBBO_IP_TO_BIND + ", value:" + hostToBind);

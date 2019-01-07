@@ -144,10 +144,13 @@ public class ConfigUtils {
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
+                    // 获取系统相关属性, 一般由jvm自动获取, 不能设置
                     String path = System.getProperty(Constants.DUBBO_PROPERTIES_KEY);
                     if (path == null || path.length() == 0) {
+                        // 获取系统环境变量
                         path = System.getenv(Constants.DUBBO_PROPERTIES_KEY);
                         if (path == null || path.length() == 0) {
+                            // 如果系统变量, 环境变量均未设置, 那么将会读取dubbo.properties, 一般都会用配置文件替代系统、环境变量
                             path = Constants.DEFAULT_DUBBO_PROPERTIES;
                         }
                     }
@@ -174,6 +177,7 @@ public class ConfigUtils {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static String getProperty(String key, String defaultValue) {
+        // 从系统变量中获取属性值
         String value = System.getProperty(key);
         if (value != null && value.length() > 0) {
             return value;
