@@ -502,7 +502,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             if (revision != null && revision.length() > 0) {
                 map.put("revision", revision);
             }
-
+            // 创建Wrapper存入Wrapper缓存Map<Class, Wrapper>
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("NO method found in service interface " + interfaceClass.getName());
@@ -528,7 +528,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             contextPath = provider.getContextpath();
         }
 
+        // 获取dubbo注册ip 环境变量-> 系统变量-> 配置文件-> /etc/hosts ->系统默认地址 ->
         String host = this.findConfigedHosts(protocolConfig, registryURLs, map);
+        // 获取dubbo注册port
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 

@@ -18,6 +18,7 @@
  */
 package org.apache.dubbo.rpc.service;
 
+import javassist.*;
 import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
@@ -31,16 +32,16 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 
+import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.net.URL;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -133,6 +134,46 @@ public class GenericServiceTest {
             }
         } finally {
             service.unexport();
+        }
+    }
+
+
+    @Test
+    public void testExtension() {
+        /**
+         * @see org.apache.dubbo.common.extension.SPI
+         * 标记SPI注解的类, 调用下面方法来把对应实现载入
+         */
+        ExtensionLoader<ConfiguratorFactory> extensionLoader = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class);
+        extensionLoader.hasExtension("dubbo");
+    }
+
+    @Test
+    public void testClassLoader() throws IOException {
+
+        Enumeration<URL> urls;
+        ClassLoader classLoader = ExtensionLoader.findClassLoader();
+        urls = classLoader.getResources("META-INF/dubbo/internal/"+ConfiguratorFactory.class.getName());
+    }
+
+    @Test
+    public void testJavassist() throws CannotCompileException, IllegalAccessException, InstantiationException, NotFoundException {
+        ClassPool pool = ClassPool.getDefault();
+        CtClass ib = pool.getCtClass(InnerBean.class.getName());
+        String proxyClassName = InnerBean.class.getName() + "_Proxy@"+this.getClass().hashCode();
+        CtClass cc = pool.makeClass(proxyClassName);
+        cc.addInterface(ib);
+        CtMethod method = CtNewMethod.make("public void code(){}", cc);
+        method.insertBefore("System.out.println(\"I'm aProgrammer,Just Coding.....\");");
+        cc.addMethod(method);
+        Class clazz = cc.toClass();
+        InnerBean innerBean = (InnerBean) clazz.newInstance();
+        innerBean.code();
+    }
+
+    public interface InnerBean {
+        default public void code() {
+
         }
     }
 

@@ -19,15 +19,20 @@ package org.apache.dubbo.rpc.proxy.javassist;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.Proxy;
 import org.apache.dubbo.common.bytecode.Wrapper;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 import org.apache.dubbo.rpc.proxy.AbstractProxyInvoker;
 import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
 
+import java.util.Arrays;
+
 /**
  * JavaassistRpcProxyFactory
  */
 public class JavassistProxyFactory extends AbstractProxyFactory {
+    protected static final Logger logger = LoggerFactory.getLogger(JavassistProxyFactory.class);
 
     @Override
     @SuppressWarnings("unchecked")
@@ -38,6 +43,8 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
     @Override
     public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
         // TODO Wrapper cannot handle this scenario correctly: the classname contains '$'
+        // 生成代理类的Wrapper, 该wrapper由Javassist字节码生成, 封装了ref中的所有方法,
+        // 实际调用的时候不会走wrapper中的默认方法, 而是走的ref中的对应methodName的方法
         final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
         return new AbstractProxyInvoker<T>(proxy, type, url) {
             @Override

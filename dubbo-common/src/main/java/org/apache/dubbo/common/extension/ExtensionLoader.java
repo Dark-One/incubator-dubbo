@@ -119,6 +119,9 @@ public class ExtensionLoader<T> {
 
         ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
         if (loader == null) {
+            // ===============================================================
+            // 根据指定类型去META-INF下找到对应的实现, 前提是type必须是SPI标记的类
+            // ===============================================================
             EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader<T>(type));
             loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
         }
@@ -139,7 +142,7 @@ public class ExtensionLoader<T> {
         }
     }
 
-    private static ClassLoader findClassLoader() {
+    public static ClassLoader findClassLoader() {
         return ClassHelper.getClassLoader(ExtensionLoader.class);
     }
 
@@ -604,13 +607,16 @@ public class ExtensionLoader<T> {
     private Map<String, Class<?>> loadExtensionClasses() {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if (defaultAnnotation != null) {
+            // SPI中的value
             String value = defaultAnnotation.value();
+            // 可以为空
             if ((value = value.trim()).length() > 0) {
                 String[] names = NAME_SEPARATOR.split(value);
                 if (names.length > 1) {
                     throw new IllegalStateException("more than 1 default extension name on extension " + type.getName()
                             + ": " + Arrays.toString(names));
                 }
+                // SPI中的value是指的这里的缓存名称, 不能多于一个(逗号分隔)
                 if (names.length == 1) {
                     cachedDefaultName = names[0];
                 }
@@ -618,6 +624,7 @@ public class ExtensionLoader<T> {
         }
 
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
+
         loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName());
         loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName().replace("org.apache", "com.alibaba"));
         loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName());
@@ -639,6 +646,7 @@ public class ExtensionLoader<T> {
             }
             if (urls != null) {
                 while (urls.hasMoreElements()) {
+                    // 如果配置目录, 将目录下所有文件加载
                     java.net.URL resourceURL = urls.nextElement();
                     loadResource(extensionClasses, classLoader, resourceURL);
                 }
