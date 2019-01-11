@@ -25,10 +25,10 @@
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d %p [%c:%M][%t]- %m%n"/>
         </layout>
-        <!-- <filter class="org.apache.log4j.varia.LevelRangeFilter">
+         <filter class="org.apache.log4j.varia.LevelRangeFilter">
             <param name="LevelMin" value="DEBUG" />
             <param name="LevelMax" value="DEBUG" />
-        </filter> -->
+        </filter>
     </appender>
     <appender name="FILE" class="org.apache.log4j.FileAppender">
         <param name="File" value="dubbo.log"/>
@@ -39,7 +39,7 @@
         </layout>
     </appender>
     <root>
-        <level value="INFO"/>
+        <level value="DEBUG"/>
         <appender-ref ref="dubbo"/>
         <appender-ref ref="FILE"/>
     </root>

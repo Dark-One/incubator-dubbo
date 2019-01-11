@@ -171,10 +171,26 @@ public class GenericServiceTest {
         innerBean.code();
     }
 
+
+    @Test
+    public void testStaticMethod() {
+        testStaticInnerMethod(1, 6);
+        testStaticInnerMethod(20, 30);
+    }
+
     public interface InnerBean {
         default public void code() {
 
         }
+    }
+
+
+    public static void testStaticInnerMethod(int begin, int end) {
+        List<Long> arrays = new ArrayList<>();
+        for (int i = begin; i < end; i++) {
+            arrays.add((long) i);
+        }
+        System.out.println(arrays);
     }
 
     @Test

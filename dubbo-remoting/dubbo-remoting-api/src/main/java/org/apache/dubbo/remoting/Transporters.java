@@ -53,7 +53,9 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
-        return getTransporter().bind(url, handler);
+        Transporter transporter = getTransporter();
+
+        return transporter.bind(url, handler);
     }
 
     public static Client connect(String url, ChannelHandler... handler) throws RemotingException {

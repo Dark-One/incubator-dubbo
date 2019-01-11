@@ -251,7 +251,9 @@ public abstract class Wrapper {
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
         ClassGenerator cc = ClassGenerator.newInstance(cl);
+        // 添加唯一id防止类重名
         cc.setClassName((Modifier.isPublic(c.getModifiers()) ? Wrapper.class.getName() : c.getName() + "$sw") + id);
+        // 以Wrapper为模板, 创建出的类是Wrapper子类, 可以强转, 具体看ClassGenerator内部toClass实现
         cc.setSuperClass(Wrapper.class);
 
         cc.addDefaultConstructor();
@@ -259,6 +261,7 @@ public abstract class Wrapper {
         cc.addField("public static " + Map.class.getName() + " pts;"); // property type map.
         cc.addField("public static String[] mns;"); // all method name array.
         cc.addField("public static String[] dmns;"); // declared method name array.
+        // 定义method参数列表类型
         for (int i = 0, len = ms.size(); i < len; i++) {
             cc.addField("public static Class[] mts" + i + ";");
         }
@@ -282,6 +285,7 @@ public abstract class Wrapper {
             wc.getField("dmns").set(null, dmns.toArray(new String[0]));
             int ix = 0;
             for (Method m : ms.values()) {
+                // 将参数类型数组赋值给mtsIX
                 wc.getField("mts" + ix++).set(null, m.getParameterTypes());
             }
             return (Wrapper) wc.newInstance();
@@ -290,7 +294,9 @@ public abstract class Wrapper {
         } catch (Throwable e) {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
+            // 释放ClassGenerator资源
             cc.release();
+            // 集合都是在方法内new创建的， 首先不会造成并发问题， 其次退出方法栈后， 方法内局部变量会自动销毁(GC)
             ms.clear();
             mns.clear();
             dmns.clear();
