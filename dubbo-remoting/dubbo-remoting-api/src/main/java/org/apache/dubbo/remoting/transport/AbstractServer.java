@@ -48,6 +48,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     private int idleTimeout;
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
+        // handler外层追加AbstractHandlerPeer
+        // 编解码工具。服务超时时间。连接超时时间
         super(url, handler);
         localAddress = getUrl().toInetSocketAddress();
 
@@ -60,6 +62,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         this.accepts = url.getParameter(Constants.ACCEPTS_KEY, Constants.DEFAULT_ACCEPTS);
         this.idleTimeout = url.getParameter(Constants.IDLE_TIMEOUT_KEY, Constants.DEFAULT_IDLE_TIMEOUT);
         try {
+            // 开启netty服务端
             doOpen();
             if (logger.isInfoEnabled()) {
                 logger.info("Start " + getClass().getSimpleName() + " bind " + getBindAddress() + ", export " + getLocalAddress());
@@ -70,6 +73,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         }
         //fixme replace this with better method
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        // 对线程池的缓存
         executor = (ExecutorService) dataStore.get(Constants.EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
     }
 

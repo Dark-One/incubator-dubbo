@@ -29,6 +29,8 @@ public class AllDispatcher implements Dispatcher {
 
     @Override
     public ChannelHandler dispatch(ChannelHandler handler, URL url) {
+        // dispatch all request in shared executor service
+        // 实际上响应请求的还是handler, 这些包装是提供并发支撑的
         return new AllChannelHandler(handler, url);
     }
 

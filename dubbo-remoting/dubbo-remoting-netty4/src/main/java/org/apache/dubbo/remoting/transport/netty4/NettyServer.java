@@ -62,22 +62,32 @@ public class NettyServer extends AbstractServer implements Server {
     private EventLoopGroup workerGroup;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
-        super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+
+        super(url,
+                // handler封装为多消息-> 心跳handler
+                ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
     /**
      * dubbo默认使用netty4 来进行底层通信
+     * 以下几乎是netty服务端标准启动过程,
+     * 如果只看dubbo源码,不需要跟进到netty中
      * @throws Throwable
      */
     @Override
     protected void doOpen() throws Throwable {
+        // netty启动帮助类
         bootstrap = new ServerBootstrap();
 
+        // bossGroup线程池
         bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+        // workerGroup线程池
         workerGroup = new NioEventLoopGroup(getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 new DefaultThreadFactory("NettyServerWorker", true));
 
-        final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
+        final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(),
+                // 父类AbstractPeer是Handler并且持有了之前组装的handler链条
+                this);
         channels = nettyServerHandler.getChannels();
 
         bootstrap.group(bossGroup, workerGroup)

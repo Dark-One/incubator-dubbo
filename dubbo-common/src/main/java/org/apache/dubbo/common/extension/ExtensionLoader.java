@@ -57,6 +57,8 @@ import java.util.regex.Pattern;
  * @see org.apache.dubbo.common.extension.SPI
  * @see org.apache.dubbo.common.extension.Adaptive
  * @see org.apache.dubbo.common.extension.Activate
+ * 每个当前对象实例对应一个T的扩展类集合
+ * 实例内部包含大量的缓存, 避免重复加载消耗资源
  */
 public class ExtensionLoader<T> {
 
@@ -78,15 +80,20 @@ public class ExtensionLoader<T> {
 
     private final Class<?> type;
 
+    // 扩展工厂, 作为不存在外部扩展时, 动态创建扩展类的工厂
     private final ExtensionFactory objectFactory;
 
+    // 已加载过的扩展信息缓存class-name
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
-
+    // 与上面缓存相反， name-class
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String, Class<?>>>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<String, Object>();
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
+    // 这个Adaptive缓存, 是缓存T对应的Adaptive实现的实例信息
+    // Adaptive实现不存在将使用objectFactory进行类构建并newInstance缓存在这
     private final Holder<Object> cachedAdaptiveInstance = new Holder<Object>();
+    // Adaptive实现类
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;

@@ -665,6 +665,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     .setHost(LOCALHOST_VALUE)
                     .setPort(0);
             Exporter<?> exporter = protocol.export(
+                    // 通过字符串拼接出ProxyFactory的default实现并在实现中调用SPI中标记的对应ref的实现类的getInvoker,这里是javassist
+                    // 使用javassist对ref进行反射, (wrapper)在Invoker的invoke方法中通过if-else枚举ref所有方法,匹配后直接 调用ref对应方法,
+                    // 好处是创建一次反射，后续调用不再反射，直接通过wrapper调用ref对应方法
                     proxyFactory.getInvoker(ref, (Class) interfaceClass, local));
             exporters.add(exporter);
             logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry");

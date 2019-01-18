@@ -43,7 +43,13 @@ public class ChannelHandlers {
     }
 
     protected ChannelHandler wrapInternal(ChannelHandler handler, URL url) {
-        return new MultiMessageHandler(new HeartbeatHandler(ExtensionLoader.getExtensionLoader(Dispatcher.class)
-                .getAdaptiveExtension().dispatch(handler, url)));
+        // 复杂(集合)消息处理器
+        return new MultiMessageHandler(
+                // 这里使用的是责任链模式, 当ChannelHandler被调用的时候，会从外到内一层层调用handler对应的方法,
+                // 方法内部处理完之后会调用下一层handler， 此处被包装了一个心跳handler
+                new HeartbeatHandler(
+                        // 没有默认实现, 走SPI中指定的ALLDispatcher
+                        ExtensionLoader.getExtensionLoader(Dispatcher.class).getAdaptiveExtension()
+                                .dispatch(handler, url)));
     }
 }

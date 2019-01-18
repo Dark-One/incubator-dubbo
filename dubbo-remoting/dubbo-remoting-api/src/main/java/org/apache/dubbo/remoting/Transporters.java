@@ -53,8 +53,9 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // netty transporter
         Transporter transporter = getTransporter();
-
+        // 开启netty服务
         return transporter.bind(url, handler);
     }
 
@@ -78,6 +79,7 @@ public class Transporters {
     }
 
     public static Transporter getTransporter() {
+        // 无默认实现，创建默认Transporter的实现，默认实现中调用的是接口中SPI指向的实现类netty4实现
         return ExtensionLoader.getExtensionLoader(Transporter.class).getAdaptiveExtension();
     }
 

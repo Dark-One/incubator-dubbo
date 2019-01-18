@@ -305,6 +305,7 @@ public class DubboProtocol extends AbstractProtocol {
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
         try {
+            // 开启服务端, 绑定地址端口, 定义响应处理类requestHandler
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);

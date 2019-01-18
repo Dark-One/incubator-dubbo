@@ -45,6 +45,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
             throw new IllegalArgumentException("handler == null");
         }
         this.url = url;
+        // AbstractPeer作为外层handler
         this.handler = handler;
     }
 
