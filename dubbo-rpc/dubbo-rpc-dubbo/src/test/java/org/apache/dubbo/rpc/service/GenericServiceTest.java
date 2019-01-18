@@ -114,21 +114,26 @@ public class GenericServiceTest {
         service.setRef(new DemoServiceImpl());
         service.export();
         try {
-            ReferenceConfig<GenericService> reference = new ReferenceConfig<GenericService>();
+            ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
             reference.setApplication(new ApplicationConfig("generic-consumer"));
             reference.setInterface(DemoService.class);
             reference.setUrl("dubbo://127.0.0.1:29581?scope=remote&timeout=3000");
-            reference.setGeneric(true);
-            GenericService genericService = reference.get();
             try {
+                DemoService demoService = reference.get();
+                List<User> users = new ArrayList<>();
+                User user = new User();
+                user.setName("actual.provider");
+                users.add(user);
+                demoService.getUsers(users);
+                /* GenericService genericService = reference.get();
                 List<Map<String, Object>> users = new ArrayList<Map<String, Object>>();
                 Map<String, Object> user = new HashMap<String, Object>();
                 user.put("class", "org.apache.dubbo.config.api.User");
                 user.put("name", "actual.provider");
                 users.add(user);
-                users = (List<Map<String, Object>>) genericService.$invoke("getUsers", new String[]{List.class.getName()}, new Object[]{users});
+                users = (List<Map<String, Object>>) genericService.$invoke("getUsers", new String[]{List.class.getName()}, new Object[]{users});*/
                 Assert.assertEquals(1, users.size());
-                Assert.assertEquals("actual.provider", users.get(0).get("name"));
+                Assert.assertEquals("actual.provider", users.get(0).getName());
             } finally {
                 reference.destroy();
             }

@@ -77,6 +77,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         reconnect_warning_period = url.getParameter("reconnect.waring.period", 1800);
 
         try {
+            // 标准nettyClient开启逻辑
             doOpen();
         } catch (Throwable t) {
             close();
@@ -105,6 +106,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
 
+        // 从缓存中读取线程池
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(DataStore.class)
                 .getDefaultExtension().get(Constants.CONSUMER_SIDE, Integer.toString(url.getPort()));
         ExtensionLoader.getExtensionLoader(DataStore.class)
@@ -114,6 +116,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
         url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(Constants.THREADPOOL_KEY, Constants.DEFAULT_CLIENT_THREADPOOL);
+        // 给handler添加外层处理逻辑
         return ChannelHandlers.wrap(handler, url);
     }
 
@@ -173,6 +176,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     }
                 }
             };
+            // 定时重连
             reconnectExecutorFuture = reconnectExecutorService.scheduleWithFixedDelay(connectStatusCheckCommand, reconnect, reconnect, TimeUnit.MILLISECONDS);
         }
     }
@@ -278,7 +282,9 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             if (isConnected()) {
                 return;
             }
+            // 开启定时重连
             initConnectStatusCheckCommand();
+            // 连接server
             doConnect();
             if (!isConnected()) {
                 throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "

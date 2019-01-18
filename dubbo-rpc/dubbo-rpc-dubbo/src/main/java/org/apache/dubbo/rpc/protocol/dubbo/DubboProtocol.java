@@ -74,6 +74,7 @@ public class DubboProtocol extends AbstractProtocol {
     //consumer side export a stub service for dispatching event
     //servicekey-stubmethods
     private final ConcurrentMap<String, String> stubServiceMethodsMap = new ConcurrentHashMap<String, String>();
+    // 这个处理类是重点
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
         @Override
@@ -389,24 +390,33 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ExchangeClient getSharedClient(URL url) {
         String key = url.getAddress();
+        // 获取共享连接
         ReferenceCountExchangeClient client = referenceClientMap.get(key);
+        // 已有连接
         if (client != null) {
+            // 未关闭
             if (!client.isClosed()) {
+                // 引用数量+1
                 client.incrementAndGetCount();
                 return client;
             } else {
+                // 移除关闭的共享连接，在下面重新初始化
                 referenceClientMap.remove(key);
             }
         }
 
         locks.putIfAbsent(key, new Object());
+        // 锁当前url
         synchronized (locks.get(key)) {
+            // 二次防重
             if (referenceClientMap.containsKey(key)) {
                 return referenceClientMap.get(key);
             }
 
             ExchangeClient exchangeClient = initClient(url);
+            // 引用计数
             client = new ReferenceCountExchangeClient(exchangeClient, ghostClientMap);
+            // 放入共享连接
             referenceClientMap.put(key, client);
             ghostClientMap.remove(key);
             locks.remove(key);
